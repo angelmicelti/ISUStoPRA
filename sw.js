@@ -1,11 +1,11 @@
-const CACHE_NAME = 'isustopra-v1';
+const CACHE_NAME = 'isustopra-v2';
 const ASSETS = [
-  '/ISUStoPRA/',
-  '/ISUStoPRA/index.html',
-  '/ISUStoPRA/styles.css',
-  '/ISUStoPRA/main.js',
-  '/ISUStoPRA/icons/icon-192.png',
-  '/ISUStoPRA/icons/icon-512.png'
+  './ISUStoPRA/',
+  './ISUStoPRA/index.html',
+  './ISUStoPRA/styles.css',
+  './ISUStoPRA/main.js',
+  './ISUStoPRA/icons/icon-192.png',
+  './ISUStoPRA/icons/icon-512.png'
 ];
 
 self.addEventListener('install', e => {
