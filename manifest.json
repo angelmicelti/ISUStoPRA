@@ -1,21 +1,25 @@
 {
-  "name": "ISUStoPRA",
+  "name": "ISUStoPRA - Generador PRA",
   "short_name": "ISUStoPRA",
   "start_url": "/ISUStoPRA/",
   "scope": "/ISUStoPRA/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
+  "description": "Extractor y generador de Programas de Refuerzo del Aprendizaje (PRA) compatible con informes LOMLOE.",
+  "orientation": "any",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/ISUStoPRA/icons/icon-192.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "type": "image/png"
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/ISUStoPRA/icons/icon-512.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/png"
+      "purpose": "any maskable"
     }
   ]
 }
