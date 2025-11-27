@@ -1,50 +1,71 @@
 const CACHE_NAME = 'isustopra-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+
+// Lista de recursos a guardar en caché.
+// Incluye tu HTML y las librerías CDN que usas para que funcione offline.
+const ASSETS_TO_CACHE = [
+  '/ISUStoPRA/',
+  '/ISUStoPRA/index.html',
+  '/ISUStoPRA/manifest.json',
+  '/ISUStoPRA/icons/icon-192.png',
+  '/ISUStoPRA/icons/icon-512.png',
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap'
 ];
 
-// Instalación: precache
-self.addEventListener('install', event => {
+// Instalación: Guarda los archivos esenciales
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[SW] Cacheando app shell y dependencias externas');
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
   self.skipWaiting();
 });
 
-// Activación: limpiar caches antiguos
-self.addEventListener('activate', event => {
+// Activación: Limpia cachés antiguas si actualizas la versión
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))
-    )
+    caches.keys().then((keyList) => {
+      return Promise.all(
+        keyList.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log('[SW] Eliminando caché antigua', key);
+            return caches.delete(key);
+          }
+        })
+      );
+    })
   );
-  clients.claim();
+  return self.clients.claim();
 });
 
-// Fetch: cache-first con fallback a red
-self.addEventListener('fetch', event => {
-  const req = event.request;
+// Intercepción de red: Estrategia Cache First, falling back to Network
+self.addEventListener('fetch', (event) => {
+  // Solo procesar peticiones GET (evitar errores con POST o chrome-extensions)
+  if (event.request.method !== 'GET') return;
 
-  // Navegación (HTML): network-first con fallback offline
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req).catch(() => caches.match('/index.html'))
-    );
-    return;
-  }
-
-  // Otros recursos: cache-first
   event.respondWith(
-    caches.match(req).then(res => res || fetch(req).then(networkRes => {
-      if (req.method === 'GET' && networkRes && networkRes.status === 200) {
-        const copy = networkRes.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+    caches.match(event.request).then((response) => {
+      // Si está en caché, devuélvelo
+      if (response) {
+        return response;
       }
-      return networkRes;
-    }))
+      
+      // Si no, búscalo en la red
+      return fetch(event.request).then((networkResponse) => {
+        // Opcional: Podríamos guardar dinámicamente nuevas peticiones aquí,
+        // pero por seguridad nos limitamos a lo definido en ASSETS_TO_CACHE
+        // o permitimos que pase tal cual.
+        return networkResponse;
+      }).catch(() => {
+        // Aquí podrías mostrar una página de "Offline" personalizada si quisieras
+        console.log('[SW] Fallo de red y recurso no en caché:', event.request.url);
+      });
+    })
   );
 });
