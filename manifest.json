@@ -1,8 +1,8 @@
 {
   "name": "ISUStoPRA",
   "short_name": "ISUStoPRA",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/ISUStoPRA/",
+  "scope": "/ISUStoPRA/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
