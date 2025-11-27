@@ -1,34 +1,50 @@
-const CACHE_NAME = 'isustopra-v2';
+const CACHE_NAME = 'isustopra-v1';
 const ASSETS = [
-  '/ISUStoPRA/',
-  '/ISUStoPRA/index.html',
-  '/ISUStoPRA/styles.css',
-  '/ISUStoPRA/main.js',
-  '/ISUStoPRA/icons/icon-192.png',
-  '/ISUStoPRA/icons/icon-512.png'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
-self.addEventListener('install', e => {
+// Instalación: precache
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  );
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
 });
 
-self.addEventListener('activate', e => {
+// Activación: limpiar caches antiguos
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))
+    )
+  );
   clients.claim();
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))));
 });
 
-self.addEventListener('fetch', e => {
-  const req = e.request;
+// Fetch: cache-first con fallback a red
+self.addEventListener('fetch', event => {
+  const req = event.request;
+
+  // Navegación (HTML): network-first con fallback offline
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).catch(() => caches.match('/ISUStoPRA/index.html')));
+    event.respondWith(
+      fetch(req).catch(() => caches.match('/index.html'))
+    );
     return;
   }
-  e.respondWith(caches.match(req).then(r => r || fetch(req).then(res => {
-    if (req.method === 'GET' && res && res.status === 200) {
-      const copy = res.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-    }
-    return res;
-  })));
+
+  // Otros recursos: cache-first
+  event.respondWith(
+    caches.match(req).then(res => res || fetch(req).then(networkRes => {
+      if (req.method === 'GET' && networkRes && networkRes.status === 200) {
+        const copy = networkRes.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+      }
+      return networkRes;
+    }))
+  );
 });
