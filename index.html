@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ISUStoPRA — Extractor y generador PRA</title>
+	<link rel="manifest" href="./ISUStoPRA/manifest.webmanifest">
+	<meta name="theme-color" content="#2563eb">
+	<link rel="icon" href="./ISUStoPRA/icons/icon-192.png">
+
 
   <!-- Tailwind, Font Awesome, PDF.js, jsPDF -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1863,5 +1867,11 @@
       if (allButton) allButton.classList.add('active');
     });
   </script>
+	  <script>
+	if ('serviceWorker' in navigator) {
+	  navigator.serviceWorker.register('/ISUStoPRA/sw.js').catch(console.error);
+	}
+	</script>
+
 </body>
 </html>
